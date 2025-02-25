@@ -130,7 +130,7 @@
         }
 
         async function approveLoan() {
-            const loan_id = 1;
+            const loan_id = ocument.getElementById("loan-id-input").value;
             const manualLoanApproval = document.getElementById("manual-loan-approval").checked;
             const manual_decision_reason = document.getElementById("manual_decision_reason").value;
 
@@ -150,15 +150,27 @@
             alert(data.message);
         }
 
-        window.onload = function() {
-            getLoanAnalysis(1); // Example loan_id, change as necessary
-        };
+        function searchLoan() {
+            const loanId = document.getElementById("loan-id-input").value;
+            if (loanId) {
+                getLoanAnalysis(loanId);
+            } else {
+                alert("Please enter a Loan ID");
+        }
+}
+
+        
     </script>
 </head>
 <body>
 
     <div class="container">
         <h1>Loan Analysis Review</h1>
+        <div class="section">
+            <label for="loan-id-input">Enter Loan ID:</label>
+            <input type="text" id="loan-id-input" placeholder="Enter Loan ID">
+            <button class="button" onclick="searchLoan()">Search</button>
+        </div>
 
         <div class="loan-info">
             <h3>Loan Information</h3>
