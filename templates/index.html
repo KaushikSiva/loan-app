@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Analysis</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        h1, h3 {
+            color: #4CAF50;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            border-radius: 8px;
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section p, .section pre {
+            font-size: 16px;
+        }
+
+        .section p strong {
+            color: #555;
+        }
+
+        label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        input[type="text"], input[type="checkbox"] {
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        input[type="text"] {
+            width: 100%;
+        }
+
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .column {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .json-view {
+            background-color: #f1f1f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        .loan-info, .ai-info {
+            background-color: #e7f4e7;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .loan-info h3, .ai-info h3 {
+            margin-top: 0;
+        }
+
+    </style>
+    <script>
+        async function getLoanAnalysis(loan_id) {
+            const response = await fetch(`/loan-analysis/${loan_id}`);
+            const data = await response.json();
+            if (response.ok) {
+                document.getElementById("loan-id").textContent = data.loan_id;
+                document.getElementById("business-name").textContent = data.business_name;
+                document.getElementById("principal-owner-name").textContent = data.principal_owner_name;
+                document.getElementById("date").textContent = data.date;
+                document.getElementById("manual-loan-approval").checked = data.manual_loan_approval;
+                document.getElementById("manual_decision_reason").value = data.manual_decision_reason;
+                document.getElementById("ai-decision").textContent = data.ai_decision ? "Approved" : "Rejected";
+                document.getElementById("ai-think").textContent = data.ai_think;
+                document.getElementById("total-monthly-deposits").textContent = data.total_monthly_deposits;
+                document.getElementById("total-monthly-withdrawals").textContent = data.total_monthly_withdrawals;
+                document.getElementById("regular-bills").textContent = JSON.stringify(data.regular_bills, null, 2);
+                document.getElementById("outstanding-loans").textContent = JSON.stringify(data.outstanding_loans, null, 2);
+                document.getElementById("financial-insights").textContent = data.financial_insights;
+            } else {
+                alert("Loan analysis not found");
+            }
+        }
+
+        async function approveLoan() {
+            const loan_id = 1;
+            const manualLoanApproval = document.getElementById("manual-loan-approval").checked;
+            const manual_decision_reason = document.getElementById("manual_decision_reason").value;
+
+            const response = await fetch("/approve-loan", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    loan_id: loan_id,
+                    manual_loan_approval: manualLoanApproval,
+                    manual_decision_reason: manual_decision_reason
+                })
+            });
+
+            const data = await response.json();
+            alert(data.message);
+        }
+
+        window.onload = function() {
+            getLoanAnalysis(1); // Example loan_id, change as necessary
+        };
+    </script>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Loan Analysis Review</h1>
+
+        <div class="loan-info">
+            <h3>Loan Information</h3>
+            <div class="row">
+                <div class="column">
+                    <p><strong>Loan ID:</strong> <span id="loan-id"></span></p>
+                    <p><strong>Business Name:</strong> <span id="business-name"></span></p>
+                    <p><strong>Principal Owner Name:</strong> <span id="principal-owner-name"></span></p>
+                </div>
+                <div class="column">
+                    <p><strong>Date:</strong> <span id="date"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="ai-info">
+            <h3>AI Decision</h3>
+            <p><strong>AI Decision:</strong> <span id="ai-decision"></span></p>
+            <p><strong>AI Reasoning:</strong> <span id="ai-think"></span></p>
+        </div>
+
+        <div class="section">
+            <h3>Financial Information</h3>
+            <div class="row">
+                <div class="column">
+                    <p><strong>Total Monthly Deposits:</strong> $<span id="total-monthly-deposits"></span></p>
+                </div>
+                <div class="column">
+                    <p><strong>Total Monthly Withdrawals:</strong> $<span id="total-monthly-withdrawals"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Regular Bills</h3>
+            <div class="json-view" id="regular-bills"></div>
+        </div>
+
+        <div class="section">
+            <h3>Outstanding Loans</h3>
+            <div class="json-view" id="outstanding-loans"></div>
+        </div>
+
+        <div class="section">
+            <h3>Financial Insights</h3>
+            <p id="financial-insights"></p>
+        </div>
+
+        <div class="section">
+            <h3>Manual Loan Approval</h3>
+            <label for="manual-loan-approval">Approve Loan:</label>
+            <input type="checkbox" id="manual-loan-approval">
+        </div>
+
+        <div class="section">
+            <label for="manual-loan-approval">Status Reason:</label>
+            <input type="text" id="manual_decision_reason" placeholder="Enter reason for approval/rejection">
+        </div>
+
+        <div class="section">
+            <button class="button" onclick="approveLoan()">Submit Decision</button>
+        </div>
+    </div>
+
+</body>
+</html>
