@@ -1,6 +1,12 @@
 from flask import Flask, request, jsonify, render_template
 from supabase import create_client, Client
 import os
+import pdf_embedder
+import retreiver
+import asyncio
+import uuid
+from flask_cors import CORS  # Import CORS
+
 
 app = Flask(__name__)
 
@@ -8,13 +14,20 @@ app = Flask(__name__)
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
+
+UPLOAD_FOLDER = "/tmp/uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Ensure the folder exists
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/loan-analysis/<int:loan_id>', methods=['GET'])
+@app.route('/upload')
+def upload():
+    return render_template('index2.html')
+
+@app.route('/loan-analysis/<int:loan_id>')
 def get_loan_analysis(loan_id):
     # Fetch loan analysis data from Supabase
     analysis_response = supabase.table('loan_analysis').select('*').eq('loan_id', loan_id).execute()
@@ -69,6 +82,37 @@ def approve_loan():
         return jsonify({'message': 'Loan analysis updated successfully'}), 200
     return jsonify({'message': 'Failed to update loan analysis'}), 500
 
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # Default to 5000, but Render assigns dynamically
-    app.run(host='0.0.0.0', port=port, debug=True)
+
+@app.route('/upload-file/<loan_id>', methods=['POST'])
+def upload_file(loan_id):
+    if not loan_id.isdigit():
+        return jsonify({"error": "Invalid loan ID"}), 400
+
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+
+    file = request.files['file']
+    filename = f"{loan_id}{os.path.splitext(file.filename)[-1]}"
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+    file.save(file_path)  # Save file immediately
+
+    # Run async processing in the background
+    asyncio.run(process_file_async(file_path, loan_id))
+    return jsonify({"message": "File uploaded successfully. Processing in background."}), 200
+
+async def process_file_async(file_path, loan_id):
+    # Run your file processing logic here
+    uuid = generate_uuid_from_file_name(file_path)
+    pdf_embedder.process_file(uuid, loan_id)
+
+def generate_uuid_from_file_name(input_string):
+    namespace = uuid.NAMESPACE_DNS  # You can use NAMESPACE_DNS, NAMESPACE_URL, or a custom UUID
+    return str(uuid.uuid5(namespace, input_string))
+
+@app.route('/loan-analysis/<loan_id>', methods=['POST'])
+def loan_analysis(loan_id):
+    retreiver.do_loan_analysis(loan_id)
+    return jsonify({"message": "Triggered Loan analysis.It will be done in the background"}), 200
+
+if __name__ == '__main__':  # Default to 5000, but Render assigns dynamically
+    app.run(debug=True)

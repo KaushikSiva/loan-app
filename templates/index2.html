@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Analysis - File Upload</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background: #f8f9fa;
+        }
+        .upload-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            background: #fff;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #45a049;
+        }
+        .btn-upload {
+            width: 100%;
+            background-color: #45a049;
+            border: none;
+        }
+        .btn-upload:hover {
+            background-color: #45a049;
+        }
+        .response-message {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .loan-analysis-section {
+            margin-top: 50px;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            background: #fff;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="upload-container">
+        <h2>Loan Analysis File Upload</h2>
+        
+        <!-- Loan File Upload Form -->
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="loan_id" class="form-label">Loan ID:</label>
+                <input type="text" id="loan_id" name="loan_id" class="form-control" placeholder="Enter Loan ID" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="file" class="form-label">Choose File:</label>
+                <input type="file" id="file" name="file" class="form-control" required>
+            </div>
+
+            <button type="button" class="btn btn-primary btn-upload" onclick="uploadFile()">Upload File</button>
+        </form>
+
+        <p id="response" class="response-message"></p>
+    </div>
+
+    <!-- Loan Analysis Section -->
+    <div class="loan-analysis-section">
+        <h2>Loan Analysis</h2>
+        <p>start financial insights on the submitted document</p>
+        
+        <form id="loanAnalysisForm">
+            <div class="mb-3">
+                <label for="loan_id_analysis" class="form-label">Loan ID:</label>
+                <input type="text" id="loan_id_analysis" name="loan_id_analysis" class="form-control" placeholder="Enter Loan ID for analysis" required>
+            </div>
+            <button type="button" class="btn btn-primary btn-upload" onclick="submitLoanAnalysis()">Submit for Analysis</button>
+        </form>
+
+        <p id="analysis-response" class="response-message"></p>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JavaScript for File Upload and Loan Analysis -->
+    <script>
+        function uploadFile() {
+            const loanId = document.getElementById("loan_id").value;
+            const fileInput = document.getElementById("file");
+            const responseText = document.getElementById("response");
+
+            if (!loanId || !fileInput.files.length) {
+                responseText.innerHTML = "⚠️ Please enter a Loan ID and select a file.";
+                responseText.style.color = "red";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            fetch(`/upload-file/${loanId}`, {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                responseText.innerHTML = `✅ ${data.message}`;
+                responseText.style.color = "green";
+            })
+            .catch(error => {
+                responseText.innerHTML = "❌ Error uploading file.";
+                responseText.style.color = "red";
+                console.error(error);
+            });
+        }
+
+        // Submit Loan Analysis
+        function submitLoanAnalysis() {
+            const loanIdAnalysis = document.getElementById("loan_id_analysis").value;
+            const analysisResponse = document.getElementById("analysisResponse"); // Define the element to display the result
+
+            fetch(`/loan-analysis/${loanIdAnalysis}`, {
+                method: "POST"
+            })
+            .then(response => response.json())
+            .then(data => {
+                analysisResponse.innerHTML = `✅ Loan Analysis Result: ${data.message}`;
+                analysisResponse.style.color = "green";
+            })
+            .catch(error => {
+                analysisResponse.innerHTML = "❌ Error processing loan analysis.";
+                analysisResponse.style.color = "red";
+                console.error(error);
+            });
+        }
+    </script>
+
+</body>
+</html>
