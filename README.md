@@ -73,6 +73,8 @@ Use the /approve-loan endpoint with a POST request to approve or reject a loan.
 
 
 ***File Structure***
+
+```bash
 loan-analysis-system/
 ├── app.py
 ├── pdf_embedder.py
