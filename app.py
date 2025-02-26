@@ -1,11 +1,8 @@
 from flask import Flask, request, jsonify, render_template
 from supabase import create_client, Client
 import os
-import pdf_embedder
-import retreiver
 import asyncio
 import uuid
-from flask_cors import CORS  # Import CORS
 
 
 app = Flask(__name__)
@@ -66,9 +63,6 @@ def get_loan_analysis(loan_id):
 @app.route('/approve-loan', methods=['POST'])
 def approve_loan():
     data = request.json
-    print("hi")
-    print(data)
-    print("h2")
     manual_loan_approval = data['manual_loan_approval']
     manual_decision_reason = data['manual_decision_reason']
 
@@ -81,38 +75,6 @@ def approve_loan():
     if response.data:
         return jsonify({'message': 'Loan analysis updated successfully'}), 200
     return jsonify({'message': 'Failed to update loan analysis'}), 500
-
-
-@app.route('/upload-file/<loan_id>', methods=['POST'])
-def upload_file(loan_id):
-    if not loan_id.isdigit():
-        return jsonify({"error": "Invalid loan ID"}), 400
-
-    if 'file' not in request.files:
-        return jsonify({"error": "No file provided"}), 400
-
-    file = request.files['file']
-    filename = f"{loan_id}{os.path.splitext(file.filename)[-1]}"
-    file_path = os.path.join(UPLOAD_FOLDER, filename)
-    file.save(file_path)  # Save file immediately
-
-    # Run async processing in the background
-    asyncio.run(process_file_async(file_path, loan_id))
-    return jsonify({"message": "File uploaded successfully. Processing in background."}), 200
-
-async def process_file_async(file_path, loan_id):
-    # Run your file processing logic here
-    uuid = generate_uuid_from_file_name(file_path)
-    pdf_embedder.process_file(uuid, loan_id)
-
-def generate_uuid_from_file_name(input_string):
-    namespace = uuid.NAMESPACE_DNS  # You can use NAMESPACE_DNS, NAMESPACE_URL, or a custom UUID
-    return str(uuid.uuid5(namespace, input_string))
-
-@app.route('/loan-analysis/<loan_id>', methods=['POST'])
-def loan_analysis(loan_id):
-    retreiver.do_loan_analysis(loan_id)
-    return jsonify({"message": "Triggered Loan analysis.It will be done in the background"}), 200
 
 if __name__ == '__main__':  # Default to 5000, but Render assigns dynamically
      port = int(os.environ.get("PORT", 5000))  # Default to 5000, but Render assigns dynamically
