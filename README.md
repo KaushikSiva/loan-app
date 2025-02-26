@@ -54,7 +54,7 @@ This repository contains the code for a Loan Analysis System that processes PDF 
     FINANCIAL_INSIGHTS_PROMPT=""
     JSON_EXTRACTOR_PROMPT=""
     FINANCIAL_INSIGHTS_MODEL=<your_financial_insights_model_name>
-
+```
 5. **Run Supabase**
 
 6. **python app.py**
