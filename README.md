@@ -39,7 +39,7 @@ This repository contains the code for a Loan Analysis System that processes PDF 
 3. **pip install -r requirements.txt**
 
 4. **Set up environment variables:**
-``bash
+```bash
     GROQ_API_KEY=<your_groq_api_key>
     LANGCHAIN_API_KEY=<your_langchain_api_key>
     LANGCHAIN_TRACING_V2=false # or true
