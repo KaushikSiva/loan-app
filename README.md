@@ -85,8 +85,9 @@ loan-analysis-system/
 │   ├── index.html
 │   └── index2.html
 └── /tmp/uploads/ # Folder for uploaded files
+```
 
-***Dependencies***
+**Dependencies***
 
 Flask
 Supabase Python client
